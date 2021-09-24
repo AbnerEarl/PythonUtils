@@ -1,3 +1,6 @@
+import re
+import secrets
+
 from jinja2 import Template
 
 
@@ -115,7 +118,14 @@ def gen_unique_str(length=8):
     return password
 
 
+
 def gen_desc_doc(source_data, var_dict):
+    """
+    ;可以解析{{name}}或者支持保留花括号{{{name}}}这种两种形式。
+    :param source_data: str
+    :param var_dict: dict
+    :return: str
+    """
     if not source_data or not var_dict:
         return source_data
 
@@ -129,10 +139,17 @@ def gen_desc_doc(source_data, var_dict):
             break
         tmps = source_data[start:]
         end = tmps.find("}}")
-        subs = source_data[start:start + end + 2]
         key = source_data[start + 2:start + end]
-        values.append(var_dict.get(key, ""))
-        source_data = source_data.replace(subs, special1)
+
+        d = key.split(":")
+        if len(d) > 1:
+            k = d[0]
+            s = d[1]
+            values.append(var_dict.get(k, "").split(s)[0])
+        else:
+            values.append(var_dict.get(key, ""))
+
+        source_data = source_data[:start] + special1 + source_data[start + end + 2:]
 
     source_data = source_data.replace("{", special2)
     source_data = source_data.replace("}", special3)
