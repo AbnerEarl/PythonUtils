@@ -1,3 +1,4 @@
+import datetime
 import os
 from pathlib import Path
 
@@ -71,6 +72,16 @@ class FileUtils:
         else:
             result.append(source_file)
         return result
+
+    @staticmethod
+    async def delete_gq_24h_file(file_path):
+        recent_time = (datetime.datetime.now() - datetime.timedelta(hours=24)).timestamp()
+        for root, dirs, files in os.walk(file_path):
+            for file_name in files:
+                fp = os.path.join(root, file_name)
+                visit_time = os.path.getatime(fp)
+                if recent_time > visit_time:
+                    os.remove(fp)
 
 
 if __name__ == '__main__':
